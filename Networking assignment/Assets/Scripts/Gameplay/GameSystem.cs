@@ -24,6 +24,10 @@ public class GameSystem : MonoBehaviour
     private int currentPlayer = 1;
     private int reverseMultiplier = 1;
 
+    [Header("References")]
+    [SerializeField]
+    private DisplayCards cardDisplay;
+
     void Start()
     {
         pile.Initialize();

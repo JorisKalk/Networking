@@ -12,4 +12,15 @@ public class PlayerCards : MonoBehaviour
     {
         
     }
+
+
+
+    ///---------------------------------------------------
+    ///Under here is temporary for local gameplay
+    ///---------------------------------------------------
+    
+    public void DisplayPlayerCards()
+    {
+
+    }
 }
