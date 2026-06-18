@@ -9,7 +9,8 @@ public enum CardColor
     GREEN,
     BLUE,
     YELLOW,
-    BLACK
+    BLACK,
+    NULL
 }
 
 public enum Actions
