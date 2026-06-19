@@ -263,7 +263,7 @@ public class GameSystem : MonoBehaviour
                 break;
             case CardColor.BLUE:
                 button.color = Color.blue;
-                pileCardButtonText.color = Color.black;
+                pileCardButtonText.color = Color.white;
                 break;
             case CardColor.YELLOW:
                 button.color = Color.yellow;

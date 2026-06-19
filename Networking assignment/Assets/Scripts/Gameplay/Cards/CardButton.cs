@@ -43,7 +43,7 @@ public class CardButton : MonoBehaviour
                 break;
             case CardColor.BLUE:
                 button.color = Color.blue;
-                text.color = Color.black;
+                text.color = Color.white;
                 break;
             case CardColor.YELLOW:
                 button.color = Color.yellow;
