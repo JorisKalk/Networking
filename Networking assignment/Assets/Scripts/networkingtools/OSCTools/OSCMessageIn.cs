@@ -32,6 +32,11 @@ namespace OSCTools {
 			typeTagIndex = typeTagIndexStart;
 		}
 
+		public int GetDataLength()
+		{
+			return data.Length;
+		}
+
 		/// <summary>
 		/// Returns a char representing the next value, such as 'i' for integer, 'f' for float, 's' for string.
 		/// See https://ccrma.stanford.edu/groups/osc/spec-1_0.html (or OSCObject constants) for a full list.

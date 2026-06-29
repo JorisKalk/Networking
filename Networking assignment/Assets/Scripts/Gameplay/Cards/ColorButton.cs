@@ -4,21 +4,16 @@ using UnityEngine.UI;
 
 public class ColorButton : MonoBehaviour
 {
-    private GameSystem gameSystem;
+    private Player controller;
 
     private CardColor cardColor;
-    private Card card;
 
     [SerializeField]
     private TextMeshProUGUI text;
 
     void Start()
     {
-        gameSystem = GameObject.Find("GameSystem").GetComponent<GameSystem>();
-        if (gameSystem == null)
-        {
-            throw new System.Exception("no game system connected to the color");
-        }
+        controller = FindAnyObjectByType<Player>();
     }
 
     void Update()
@@ -26,9 +21,8 @@ public class ColorButton : MonoBehaviour
         
     }
 
-    public void ReceiveColor(CardColor color, Card newCard)
+    public void ReceiveColor(CardColor color)
     {
-        card = newCard;
         cardColor = color;
 
         Image button = GetComponent<Image>();
@@ -45,7 +39,7 @@ public class ColorButton : MonoBehaviour
                 break;
             case CardColor.BLUE:
                 button.color = Color.blue;
-                text.color = Color.white;
+                text.color = Color.white    ;
                 break;
             case CardColor.YELLOW:
                 button.color = Color.yellow;
@@ -59,9 +53,10 @@ public class ColorButton : MonoBehaviour
     //Button click
     public void ColorChosen()
     {
-        Debug.Log("Card played: " + card.ToString() + "\n" +
-            "Color chosen: " + cardColor.ToString());
+        controller.ChooseColor(cardColor);
+        //Debug.Log("Card played: " + card.ToString() + "\n" +
+        //    "Color chosen: " + cardColor.ToString());
 
-        gameSystem.CardPlayed(card, cardColor);
+        //gameSystem.CardPlayed(card, cardColor);
     }
 }

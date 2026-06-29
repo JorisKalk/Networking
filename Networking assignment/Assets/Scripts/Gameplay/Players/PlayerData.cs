@@ -5,7 +5,7 @@ using System;
 [Serializable]
 public class PlayerData
 {
-    public int playerNumber;
+    public int playerNumber = 0;
     public List<Card> heldCards;
 
     //for testing purposes
@@ -17,6 +17,12 @@ public class PlayerData
         heldCards = new List<Card>();
 
         //testing list
+        heldNames = new List<string>();
+    }
+
+    public PlayerData()
+    {
+        heldCards = new List<Card>();
         heldNames = new List<string>();
     }
 

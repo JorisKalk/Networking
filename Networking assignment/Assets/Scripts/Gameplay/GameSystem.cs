@@ -2,11 +2,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
+using NetworkConnections;
 
 
 
 //add check if its the players turn
-public class GameSystem : MonoBehaviour
+public class GameSystem
 {
     [SerializeField]
     private CardDeck pile;
@@ -26,10 +27,12 @@ public class GameSystem : MonoBehaviour
     private bool winner = false;
 
     private Card currentTopCard;
-    private int currentPlayer = 1;
     private int currentPlayerIndex;
     private int reverseMultiplier = 1;
     private CardColor currentWildColor = CardColor.NULL;
+
+    private int activePlayer = 1;
+    private int skipTurnModifier = 1;
 
     [Header("References")]
     [SerializeField]
@@ -41,22 +44,100 @@ public class GameSystem : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI playerIndicator;
 
-    void Start()
+    //new variables
+    public delegate void TopCardChangedEvent(Card card, CardColor color = CardColor.NULL);
+    public event TopCardChangedEvent OnTopCardChanged;
+
+    public delegate void ActivePlayerChangedEvent(int player);
+    public event ActivePlayerChangedEvent OnActivePlayerChanged;
+
+    public delegate void PlayerDrawsCardsEvent(int player, int amount);
+    public event PlayerDrawsCardsEvent OnPlayerDrawsCards;
+
+    public delegate void PlayerReceivesCardsEvent(int amount, List<Card> cards, TcpNetworkConnection connection);
+    public event PlayerReceivesCardsEvent OnPlayerReceivesCards;
+
+    public delegate void GameOverEvent(int winner);
+    public event GameOverEvent OnGameOver;
+
+
+    //new code
+    public void StartSystem()
     {
+        pile = new CardDeck();
         pile.Initialize();
-        InitializePlayers();
+
+        pileCardButton = GameObject.Find("PileCardDisplay");
+        pileCardButtonText = pileCardButton.GetComponent<TextMeshProUGUI>();
+
         currentTopCard = pile.GetSingleCard();
         if (currentTopCard.cardType == Card.CardType.WILD)
         {
             currentWildColor = CardColor.RED;
         }
-        UpdateCurrentCardDisplay(currentWildColor);
-
-        Debug.Log("Game starts with: " + currentTopCard.ToString());
-        currentTopCardInspector = currentTopCard.ToString();
-        playerIndicator.text = "Player: " + currentPlayer.ToString();
-        cardDisplay.DisplayNewCards(players[0]);
+        OnActivePlayerChanged?.Invoke(activePlayer);
+        OnTopCardChanged?.Invoke(currentTopCard, currentWildColor);
     }
+
+    public void HandOutStartingCards(TcpNetworkConnection connection)
+    {
+        PullNewCards(startingAmountCards, connection);
+    }
+    
+    public void PlayColoredCard(Card card)
+    {
+        CardPlayed(card);
+    }
+
+    public void PlayWildCard(Card card, CardColor wildColorChoice)
+    {
+        CardPlayed(card, wildColorChoice);
+    }
+
+    public void DrawPileCard(int player)
+    {
+        DrawCards(player, 1);
+        NextPlayer(reverseMultiplier);
+    }
+
+    public void DrawCards(int player, int amount)
+    {
+        OnPlayerDrawsCards?.Invoke(player, amount);
+    }
+
+    public void PullNewCards(int amount, TcpNetworkConnection connection)
+    {
+        List<Card> cards = pile.GetCards(amount);
+        OnPlayerReceivesCards?.Invoke(amount, cards, connection);
+    }
+
+    public void GameOver(int winner)
+    {
+        OnGameOver?.Invoke(winner);
+    }
+
+    public bool CheckActivePlayer(int player)
+    {
+        return activePlayer == player;
+    }
+    //---------------------------------------------------------------------
+
+    //void Start()
+    //{
+    //    pile.Initialize();
+    //    InitializePlayers();
+    //    currentTopCard = pile.GetSingleCard();
+    //    if (currentTopCard.cardType == Card.CardType.WILD)
+    //    {
+    //        currentWildColor = CardColor.RED;
+    //    }
+    //    UpdateCurrentCardDisplay(currentWildColor);
+
+    //    Debug.Log("Game starts with: " + currentTopCard.ToString());
+    //    currentTopCardInspector = currentTopCard.ToString();
+    //    playerIndicator.text = "Player: " + currentPlayer.ToString();
+    //    cardDisplay.DisplayNewCards(players[0]);
+    //}
 
     private void InitializePlayers()
     {
@@ -70,7 +151,7 @@ public class GameSystem : MonoBehaviour
 
     public void CardPlayed(Card card, CardColor wildColorChoice = CardColor.NULL)
     {
-        players[currentPlayerIndex].CardPlayed(card);
+        //players[currentPlayerIndex].CardPlayed(card);
 
         if (wildColorChoice == CardColor.NULL)
         {
@@ -86,23 +167,30 @@ public class GameSystem : MonoBehaviour
         pile.ReturnCardToPile(currentTopCard);
         currentTopCard = card;
         currentTopCardInspector = currentTopCard.ToString();
-        UpdateCurrentCardDisplay(wildColorChoice);
-        if (players[currentPlayerIndex].heldCards.Count == 0)
-        {
-            Debug.Log("Player " + currentPlayer.ToString() + " has won the game!");
-            winner = true;
-            return;
-        }
+        OnTopCardChanged?.Invoke(currentTopCard, wildColorChoice);
+
+        //active player change needs to be added
+        //add the correct events to make the card play go correctly
+
+        //if (players[currentPlayerIndex].heldCards.Count == 0)
+        //{
+        //    Debug.Log("Player " + currentPlayer.ToString() + " has won the game!");
+        //    winner = true;
+        //    return;
+        //}
         NextPlayer(reverseMultiplier);
-        playerIndicator.text = "Player: " + currentPlayer.ToString();
-        cardDisplay.DisplayNewCards(players[currentPlayerIndex]);
+        //playerIndicator.text = "Player: " + activePlayer.ToString();
+        //cardDisplay.DisplayNewCards(players[currentPlayerIndex]);
+
+        skipTurnModifier = 1;
     }
 
+    //client, probably move this to the Player script instead
     public void DrawCardButtonPressed()
     {
         players[currentPlayerIndex].AddSingleCardToHand(pile.GetSingleCard());
         NextPlayer(reverseMultiplier);
-        playerIndicator.text = "Player: " + currentPlayer.ToString();
+        playerIndicator.text = "Player: " + activePlayer.ToString();
         cardDisplay.DisplayNewCards(players[currentPlayerIndex]);
     }
 
@@ -115,19 +203,15 @@ public class GameSystem : MonoBehaviour
             switch (currentCard.action)
             {
                 case Actions.SKIP:
-                    NextPlayer(reverseMultiplier);
-                    Debug.Log("Player " + currentPlayer.ToString() + " skips their turn.");
+                    skipTurnModifier = 2;
                     break;
                 case Actions.REVERSE:
                     reverseMultiplier *= -1;
-                    Debug.Log("The turn order is now reversed.");
                     break;
                 case Actions.DRAW_TWO:
-                    NextPlayer(reverseMultiplier);
-                    currentPlayerIndex = currentPlayer - 1;
-                    players[currentPlayerIndex].AddCardsToHand(pile.GetCards(2));
-                    Debug.Log("Player " + currentPlayer.ToString() + " drew 2 cards and skipped their turn.\n" +
-                        "They now have " + players[currentPlayerIndex].heldCards.Count.ToString() + " cards left.");
+                    skipTurnModifier = 2;
+                    OnPlayerDrawsCards?.Invoke(GetNextPlayer(reverseMultiplier), 2);
+                    currentPlayerIndex = activePlayer;
                     break;
             }
         }
@@ -137,22 +221,20 @@ public class GameSystem : MonoBehaviour
 
             if (currentCard.wildAction == WildActions.DRAW_FOUR)
             {
-                NextPlayer(reverseMultiplier);
-                currentPlayerIndex = currentPlayer - 1;
-                players[currentPlayerIndex].AddCardsToHand(pile.GetCards(4));
-                Debug.Log("Player " + currentPlayer.ToString() + " drew 4 cards and skipped their turn.\n" +
-                    "They now have " + players[currentPlayerIndex].heldCards.Count.ToString() + " cards left.");
+                skipTurnModifier = 2;
+                OnPlayerDrawsCards?.Invoke(GetNextPlayer(reverseMultiplier), 4);
+                currentPlayerIndex = activePlayer;
             }
         }
     }
 
     void Update()
     {
-        currentPlayerIndex = currentPlayer - 1;
+        currentPlayerIndex = activePlayer;
         //if (!winner) GameTest();
         if (players[currentPlayerIndex].heldCards.Count == 0)
         {
-            Debug.Log("Player " + currentPlayer.ToString() + " has won the game!");
+            Debug.Log("Player " + activePlayer.ToString() + " has won the game!");
             winner = true;
             return;
         }
@@ -162,9 +244,9 @@ public class GameSystem : MonoBehaviour
 
     private void GameTest()
     {
-        int currentPlayerIndex = currentPlayer - 1;
+        int currentPlayerIndex = activePlayer;
 
-        playerIndicator.text = "Player: " + currentPlayer.ToString();
+        playerIndicator.text = "Player: " + activePlayer.ToString();
 
         cardDisplay.DisplayNewCards(players[currentPlayerIndex]);
 
@@ -174,11 +256,11 @@ public class GameSystem : MonoBehaviour
             {
                 CardPlayed(card);
                 players[currentPlayerIndex].CardPlayed(card);
-                Debug.Log("Player " + currentPlayer.ToString() + " played: " + card.ToString() + "\n" +
-                    "Player " + currentPlayer.ToString() + " has " + players[currentPlayerIndex].heldCards.Count + " cards left.");
+                Debug.Log("Player " + activePlayer.ToString() + " played: " + card.ToString() + "\n" +
+                    "Player " + activePlayer.ToString() + " has " + players[currentPlayerIndex].heldCards.Count + " cards left.");
                 if (players[currentPlayerIndex].heldCards.Count == 0)
                 {
-                    Debug.Log("Player " + currentPlayer.ToString() + " has won the game!");
+                    Debug.Log("Player " + activePlayer.ToString() + " has won the game!");
                     winner = true;
                     return;
                 }
@@ -189,7 +271,7 @@ public class GameSystem : MonoBehaviour
                     {
                         case Actions.SKIP:
                             NextPlayer(reverseMultiplier);
-                            Debug.Log("Player " + currentPlayer.ToString() + " skips their turn.");
+                            Debug.Log("Player " + activePlayer.ToString() + " skips their turn.");
                             break;
                         case Actions.REVERSE:
                             reverseMultiplier *= -1;
@@ -197,9 +279,9 @@ public class GameSystem : MonoBehaviour
                             break;
                         case Actions.DRAW_TWO:
                             NextPlayer(reverseMultiplier);
-                            currentPlayerIndex = currentPlayer - 1;
+                            currentPlayerIndex = activePlayer                           ;
                             players[currentPlayerIndex].AddCardsToHand(pile.GetCards(2));
-                            Debug.Log("Player " + currentPlayer.ToString() + " drew 2 cards and skipped their turn.\n" +
+                            Debug.Log("Player " + activePlayer.ToString() + " drew 2 cards and skipped their turn.\n" +
                                 "They now have " + players[currentPlayerIndex].heldCards.Count.ToString() + " cards left.");
                             break;
                     }
@@ -210,9 +292,9 @@ public class GameSystem : MonoBehaviour
                     if (currentCard.wildAction == WildActions.DRAW_FOUR)
                     {
                         NextPlayer(reverseMultiplier);
-                        currentPlayerIndex = currentPlayer - 1;
+                        currentPlayerIndex = activePlayer;
                         players[currentPlayerIndex].AddCardsToHand(pile.GetCards(4));
-                        Debug.Log("Player " + currentPlayer.ToString() + " drew 4 cards and skipped their turn.\n" +
+                        Debug.Log("Player " + activePlayer.ToString() + " drew 4 cards and skipped their turn.\n" +
                             "They now have " + players[currentPlayerIndex].heldCards.Count.ToString() + " cards left.");
                     }
                 }
@@ -222,18 +304,28 @@ public class GameSystem : MonoBehaviour
         }
 
         players[currentPlayerIndex].AddSingleCardToHand(pile.GetSingleCard());
-        Debug.Log("Player " + currentPlayer.ToString() + " drew a card from the pile, they now have " + 
+        Debug.Log("Player " + activePlayer.ToString() + " drew a card from the pile, they now have " + 
             players[currentPlayerIndex].heldCards.Count.ToString() + " cards left.");
         NextPlayer(reverseMultiplier);
     }
 
     private void NextPlayer(int turn)
     {
-        currentPlayer += turn;
-        if (currentPlayer > playerAmount) currentPlayer -= playerAmount;
-        else if (currentPlayer < 1) currentPlayer += playerAmount;
+        activePlayer += turn * skipTurnModifier;
+        if (activePlayer > playerAmount) activePlayer -= playerAmount;
+        else if (activePlayer < 1) activePlayer += playerAmount;
 
-        currentPlayerIndex = currentPlayer - 1;
+        currentPlayerIndex = activePlayer;
+
+        OnActivePlayerChanged?.Invoke(activePlayer);
+    }
+
+    public int GetNextPlayer(int turn)
+    {
+        int nextPlayer = activePlayer + turn;
+        if (nextPlayer > playerAmount) nextPlayer -= playerAmount;
+        else if (nextPlayer < 1) nextPlayer += playerAmount;
+        return nextPlayer;
     }
 
     private void UpdateCurrentCardDisplay(CardColor wildColorChoice = CardColor.NULL)

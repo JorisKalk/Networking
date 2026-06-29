@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class DisplayCards : MonoBehaviour
@@ -8,6 +9,12 @@ public class DisplayCards : MonoBehaviour
     private GameObject cardDisplayButton;
     [SerializeField]
     private GameObject colorChoiceButton;
+
+    [Header("Pile Display")]
+    [SerializeField]
+    private GameObject pileCardButton;
+    [SerializeField]
+    private TextMeshProUGUI pileCardButtonText;
 
     [Header("Placement Values")]
     [SerializeField]
@@ -37,8 +44,91 @@ public class DisplayCards : MonoBehaviour
         
     }
 
+    public void SubscribeEvents(UnoClient client)
+    {
+        client.OnTopCardChanged += OnTopCardUpdated;
+        client.OnColorChoice += OnColorChoice;
+    }
+
+    private void OnTopCardUpdated(Card card, CardColor wildColorChoice = CardColor.NULL)
+    {
+        Debug.Log("update pile");
+        Image button = pileCardButton.GetComponent<Image>();
+
+        CardColor checkedColor;
+
+        if (wildColorChoice == CardColor.NULL)
+        {
+            checkedColor = card.color;
+        }
+        else
+        {
+            checkedColor = wildColorChoice;
+        }
+
+        switch (checkedColor)
+        {
+            case CardColor.RED:
+                button.color = Color.red;
+                pileCardButtonText.color = Color.white;
+                break;
+            case CardColor.GREEN:
+                button.color = Color.green;
+                pileCardButtonText.color = Color.black;
+                break;
+            case CardColor.BLUE:
+                button.color = Color.blue;
+                pileCardButtonText.color = Color.white;
+                break;
+            case CardColor.YELLOW:
+                button.color = Color.yellow;
+                pileCardButtonText.color = Color.black;
+                break;
+            case CardColor.BLACK:
+                button.color = Color.black;
+                pileCardButtonText.color = Color.white;
+                break;
+        }
+
+        pileCardButtonText.text = card.ToString();
+    }
+
+    private void OnColorChoice()
+    {
+        ClearButtons();
+
+        for (int i = 0; i < 4; i++)
+        {
+            GameObject colorChoice = Instantiate(colorChoiceButton);
+            colorChoice.transform.SetParent(transform, false);
+            ColorButton button = colorChoice.GetComponent<ColorButton>();
+
+            switch (i)
+            {
+                case 0:
+                    button.ReceiveColor(CardColor.RED);
+                    break;
+                case 1:
+                    button.ReceiveColor(CardColor.GREEN);
+                    break;
+                case 2:
+                    button.ReceiveColor(CardColor.BLUE);
+                    break;
+                case 3:
+                    button.ReceiveColor(CardColor.YELLOW);
+                    break;
+            }
+
+            currentDisplayedButtons.Add(colorChoice);
+
+            colorChoice.transform.localPosition = new Vector3(-600 + (400 * i), 0);
+        }
+    }
+
     public void DisplayNewCards(PlayerData player)
     {
+        Debug.Log("test");
+
         ClearButtons();
 
         currentColumn = 0;
@@ -64,37 +154,37 @@ public class DisplayCards : MonoBehaviour
         }
     }
 
-    public void DisplayColorChoices(Card card)
-    {
-        ClearButtons();
+    //public void DisplayColorChoices(Card card)
+    //{
+    //    ClearButtons();
 
-        for (int i = 0; i < 4; i++)
-        {
-            GameObject colorChoice = Instantiate(colorChoiceButton);
-            colorChoice.transform.SetParent(transform, false);
-            ColorButton button = colorChoice.GetComponent<ColorButton>();
+    //    for (int i = 0; i < 4; i++)
+    //    {
+    //        GameObject colorChoice = Instantiate(colorChoiceButton);
+    //        colorChoice.transform.SetParent(transform, false);
+    //        ColorButton button = colorChoice.GetComponent<ColorButton>();
             
-            switch (i)
-            {
-                case 0:
-                    button.ReceiveColor(CardColor.RED, card);
-                    break;
-                case 1:
-                    button.ReceiveColor(CardColor.GREEN, card);
-                    break;
-                case 2:
-                    button.ReceiveColor(CardColor.BLUE, card);
-                    break;
-                case 3:
-                    button.ReceiveColor(CardColor.YELLOW, card);
-                    break;
-            }
+    //        switch (i)
+    //        {
+    //            case 0:
+    //                button.ReceiveColor(CardColor.RED, card);
+    //                break;
+    //            case 1:
+    //                button.ReceiveColor(CardColor.GREEN, card);
+    //                break;
+    //            case 2:
+    //                button.ReceiveColor(CardColor.BLUE, card);
+    //                break;
+    //            case 3:
+    //                button.ReceiveColor(CardColor.YELLOW, card);
+    //                break;
+    //        }
 
-            currentDisplayedButtons.Add(colorChoice);
+    //        currentDisplayedButtons.Add(colorChoice);
 
-            colorChoice.transform.localPosition = new Vector3(-600 + (400 * i), 0);
-        }
-    }
+    //        colorChoice.transform.localPosition = new Vector3(-600 + (400 * i), 0);
+    //    }
+    //}
 
     private void ClearButtons()
     {

@@ -393,6 +393,77 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 287589347}
   m_CullTransparentMesh: 1
+--- !u!1 &837718131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 837718135}
+  - component: {fileID: 837718134}
+  - component: {fileID: 837718133}
+  - component: {fileID: 837718132}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &837718132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837718131}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e36a4c3f71bc424a8654311cb300c89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnoClient
+--- !u!114 &837718133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837718131}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 554497c5db7f5c343bf7857dccafb865, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnoServer
+  playerCount: 4
+--- !u!114 &837718134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837718131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fcb5234d923ecc4db0d34a2c5bc3c20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SessionManager
+--- !u!4 &837718135
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837718131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 513.8604, y: 422.20343, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &979624545
 GameObject:
   m_ObjectHideFlags: 0
@@ -472,6 +543,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &982344019
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 982344021}
+  - component: {fileID: 982344020}
+  m_Layer: 0
+  m_Name: GameSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &982344020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982344019}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e21a890a03c83a84097506492b30ccd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  playerIndicator: {fileID: 1235962014}
+--- !u!4 &982344021
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982344019}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 513.8604, y: 422.20343, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1030690307
 GameObject:
   m_ObjectHideFlags: 0
@@ -522,65 +638,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DisplayCards
   cardDisplayButton: {fileID: 5001558733839788140, guid: 842631cad6454dc43ae48a8ce56dc8f3, type: 3}
   colorChoiceButton: {fileID: 3838395667582578474, guid: 09bb64d26498d1c419a78d21f1087660, type: 3}
+  pileCardButton: {fileID: 1449893973}
+  pileCardButtonText: {fileID: 269877593}
   startingX: -700
   startingY: 400
   offsetX: 350
   offsetY: 80
   maxColumns: 5
---- !u!1 &1121146090
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1121146092}
-  - component: {fileID: 1121146091}
-  m_Layer: 0
-  m_Name: GameSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1121146091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1121146090}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6da75663bd979d34faab001626b07a53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameSystem
-  pile: {fileID: 1869977983}
-  playerAmount: 4
-  players: []
-  startingAmountCards: 7
-  currentTopCardInspector: 
-  cardDisplay: {fileID: 1030690309}
-  pileCardButton: {fileID: 1449893973}
-  pileCardButtonText: {fileID: 269877593}
-  playerIndicator: {fileID: 1235962014}
---- !u!4 &1121146092
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1121146090}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: -0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1869977984}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1143852962
 GameObject:
   m_ObjectHideFlags: 0
@@ -822,6 +886,7 @@ GameObject:
   - component: {fileID: 1426565967}
   - component: {fileID: 1426565966}
   - component: {fileID: 1426565965}
+  - component: {fileID: 1426565968}
   m_Layer: 5
   m_Name: DrawFromPile
   m_TagString: Untagged
@@ -893,9 +958,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1121146091}
-        m_TargetAssemblyTypeName: GameSystem, Assembly-CSharp
-        m_MethodName: DrawCardButtonPressed
+      - m_Target: {fileID: 1426565968}
+        m_TargetAssemblyTypeName: DrawFromPileButton, Assembly-CSharp
+        m_MethodName: ButtonPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -943,6 +1008,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426565963}
   m_CullTransparentMesh: 1
+--- !u!114 &1426565968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426565963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b389991798a5bb244ae76126069abc8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DrawFromPileButton
 --- !u!1 &1449893973
 GameObject:
   m_ObjectHideFlags: 0
@@ -1064,61 +1141,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1449893973}
   m_CullTransparentMesh: 1
---- !u!1 &1869977982
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1869977984}
-  - component: {fileID: 1869977983}
-  m_Layer: 0
-  m_Name: CardDeck
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1869977983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1869977982}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f708ffefa55a2f4c877aae531d132c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardDeck
-  minCardValue: 0
-  maxCardValue: 9
-  amountOfDifferentColors: 4
-  amountOfDifferentActionCards: 3
-  amountOfDifferentWildCards: 2
-  cardDuplicateAmount: 2
-  wildCardDuplicateAmount: 4
-  numberCardsInputList: []
-  actionCardsInputList: []
-  wildCardsInputList: []
-  inspectorCardsList: []
---- !u!4 &1869977984
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1869977982}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1121146092}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2035085072
 GameObject:
   m_ObjectHideFlags: 0
@@ -1496,6 +1518,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 1143852965}
   - {fileID: 2066779008}
-  - {fileID: 1121146092}
   - {fileID: 2035085076}
   - {fileID: 979624548}
+  - {fileID: 837718135}
+  - {fileID: 982344021}

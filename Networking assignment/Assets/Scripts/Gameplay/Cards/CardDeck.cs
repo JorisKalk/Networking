@@ -28,7 +28,7 @@ public enum WildActions
     NULL
 }
 
-public class CardDeck : MonoBehaviour
+public class CardDeck
 {
     [SerializeField]
     private List<Card> cards = new List<Card>();
@@ -240,7 +240,8 @@ public abstract class Card
     {
         NUMBER,
         ACTION,
-        WILD
+        WILD,
+        NULL
     }
 
     public CardType cardType = new CardType();
@@ -298,5 +299,70 @@ public class WildCard : Card
     public override string ToString()
     {
         return color.ToString() + "\n" + wildAction.ToString();
+    }
+}
+
+public class CardEnumsConverter
+{
+    public CardColor ConvertToCardColorEnum(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                return CardColor.RED;
+            case 1:
+                return CardColor.GREEN;
+            case 2:
+                return CardColor.BLUE;
+            case 3:
+                return CardColor.YELLOW;
+            case 4:
+                return CardColor.BLACK;
+            default:
+                return CardColor.NULL;
+        }
+    }
+
+    public Card.CardType ConvertToCardTypeEnum(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                return Card.CardType.NUMBER;
+            case 1:
+                return Card.CardType.ACTION;
+            case 2:
+                return Card.CardType.WILD;
+            default:
+                return Card.CardType.NULL;
+        }
+    }
+
+    public Actions ConvertToActionsEnum(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                return Actions.SKIP;
+            case 1:
+                return Actions.REVERSE;
+            case 2:
+                return Actions.DRAW_TWO;
+            default:
+                return Actions.NULL;
+        }
+    }
+
+    public WildActions ConvertToWildActionsEnum(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                return WildActions.CHOOSE_COLOR;
+            case 1:
+                return WildActions.DRAW_FOUR;
+            default:
+                return WildActions.NULL;
+        }
     }
 }

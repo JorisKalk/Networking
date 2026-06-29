@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class CardButton : MonoBehaviour
 {
-    private GameSystem gameSystem;
+    private Player controller;
     private Card card;
 
     [SerializeField]
@@ -12,10 +12,10 @@ public class CardButton : MonoBehaviour
 
     void Start()
     {
-        gameSystem = GameObject.Find("GameSystem").GetComponent<GameSystem>();
-        if (gameSystem == null)
+        controller = FindAnyObjectByType<Player>();
+        if (controller == null)
         {
-            throw new System.Exception("no game system connected to the card");
+            throw new System.Exception("no controller connected to the card");
         }
     }
 
@@ -58,20 +58,22 @@ public class CardButton : MonoBehaviour
     }
 
     //Button click
+    //change this to make a play request
     public void CardPlayed()
     {
         Debug.Log("Card played: " + card.ToString());
         
-        if (gameSystem.CheckCardPlayable(card))
-        {
-            if (card.cardType != Card.CardType.WILD)
-            {
-                gameSystem.CardPlayed(card);
-            }
-            else
-            {
-                GameObject.Find("CardDisplay").GetComponent<DisplayCards>().DisplayColorChoices(card);
-            }
-        }
+        controller.MakeMove(card);
+        //if (gameSystem.CheckCardPlayable(card))
+        //{
+        //    if (card.cardType != Card.CardType.WILD)
+        //    {
+        //        gameSystem.CardPlayed(card);
+        //    }
+        //    else
+        //    {
+        //        GameObject.Find("CardDisplay").GetComponent<DisplayCards>().DisplayColorChoices(card);
+        //    }
+        //}
     }
 }
