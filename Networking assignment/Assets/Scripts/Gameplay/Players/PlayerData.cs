@@ -5,7 +5,8 @@ using System;
 [Serializable]
 public class PlayerData
 {
-    public int playerNumber = 0;
+    //change to the right value
+    public int playerID = 0;
     public List<Card> heldCards;
 
     //for testing purposes
@@ -13,7 +14,7 @@ public class PlayerData
 
     public PlayerData(int pPlayerIndex)
     {
-        playerNumber = pPlayerIndex;
+        playerID = pPlayerIndex;
         heldCards = new List<Card>();
 
         //testing list

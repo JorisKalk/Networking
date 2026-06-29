@@ -5,6 +5,8 @@ using NetworkConnections;
 using OSCTools;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using System;
 
 public class UnoClient : MonoBehaviour
 {
@@ -39,26 +41,40 @@ public class UnoClient : MonoBehaviour
 
     void Start()
     {
-        TcpClient client = new TcpClient();
-        client.Connect(new IPEndPoint(ServerIP, 50006));
-        connection = new TcpNetworkConnection(client);
-        // TODO: error handling
+        try
+        {
+            TcpClient client = new TcpClient();
+            client.Connect(new IPEndPoint(ServerIP, 50006));
+            connection = new TcpNetworkConnection(client);
+            // TODO: error handling
 
-        enumConverter = new CardEnumsConverter();
+            enumConverter = new CardEnumsConverter();
 
-        Debug.Log("Starting client, connecting to " + ServerIP);
+            Debug.Log("Starting client, connecting to " + ServerIP);
 
-        // Initialize the dispatcher and callbacks for incoming OSC messages:
-        dispatcher = new OSCDispatcher();
-        dispatcher.ShowIncomingMessages = true;
-        Initialize();
+            // Initialize the dispatcher and callbacks for incoming OSC messages:
+            dispatcher = new OSCDispatcher();
+            dispatcher.ShowIncomingMessages = true;
+            Initialize();
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
     }
 
     void HandlePacket(byte[] packet, IPEndPoint remote)
     {
-        OSCMessageIn mess = new OSCMessageIn(packet);
-        Debug.Log("Message arrives on client: " + mess);
-        dispatcher.HandlePacket(packet, remote);
+        try
+        {
+            OSCMessageIn mess = new OSCMessageIn(packet);
+            Debug.Log("Message arrives on client: " + mess);
+            dispatcher.HandlePacket(packet, remote);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
     }
 
     void Update()

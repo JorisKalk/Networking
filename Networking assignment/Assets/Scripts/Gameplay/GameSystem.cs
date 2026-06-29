@@ -167,6 +167,13 @@ public class GameSystem
         if (activePlayer > playerAmount) activePlayer -= playerAmount;
         else if (activePlayer < 1) activePlayer += playerAmount;
 
+        if (!UnoServer.instance.PlayerExists(activePlayer))
+        {
+            activePlayer += turn;
+            if (activePlayer > playerAmount) activePlayer -= playerAmount;
+            else if (activePlayer < 1) activePlayer += playerAmount;
+        }
+
         OnActivePlayerChanged?.Invoke(activePlayer);
     }
 

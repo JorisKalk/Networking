@@ -5,9 +5,11 @@ using System.Linq;
 using System.Collections.Generic;
 using NetworkConnections;
 using OSCTools;
+using System;
 
 public class UnoServer : MonoBehaviour
 {
+    public static UnoServer instance;
     TcpListener listener;
     List<TcpNetworkConnection> connections;
     OSCDispatcher dispatcher;
@@ -18,6 +20,7 @@ public class UnoServer : MonoBehaviour
     private int playerCount = 4;
 
     private GameSystem gameSystem;
+    //change the int to playerdata instead to save the cards on the server instead
     Dictionary<TcpNetworkConnection, int> playerIDs = new Dictionary<TcpNetworkConnection, int>();
 
     private Card currentWildCard;
@@ -26,6 +29,7 @@ public class UnoServer : MonoBehaviour
 
     private void Start()
     {
+        instance = this;
         int port = 50006;
         Debug.Log("Starting server at " + port);
         listener = new TcpListener(IPAddress.Any, port);
@@ -99,15 +103,32 @@ public class UnoServer : MonoBehaviour
 
     private void HandlePacket(byte[] packet, IPEndPoint remote)
     {
-        OSCMessageIn mess = new OSCMessageIn(packet);
-        Debug.Log("Message arrives on server: " + mess);
+        try
+        {
+            OSCMessageIn mess = new OSCMessageIn(packet);
+            Debug.Log("Message arrives on server: " + mess);
 
-        dispatcher.HandlePacket(packet, remote);
+            dispatcher.HandlePacket(packet, remote);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
     }
 
     private void CleanupConnections()
     {
-        // TODO
+        List<TcpNetworkConnection> conns = new List<TcpNetworkConnection>(connections);
+        foreach (TcpNetworkConnection conn in conns)
+        {
+            if (conn.Status != ConnectionStatus.Connected && conn.Status != ConnectionStatus.Connecting)
+            {
+                Debug.Log("client removed: " + conn.Remote.Address + ":" + conn.Remote.Port);
+                conn.Close();
+                connections.Remove(conn);
+                playerIDs.Remove(conn);
+            }
+        }
     }
 
     private void Initialize()
@@ -340,6 +361,11 @@ public class UnoServer : MonoBehaviour
         {
             conn.Send(packet);
         }
+    }
+
+    public bool PlayerExists(int player)
+    {
+        return playerIDs.ContainsValue(player);
     }
 
     private TcpNetworkConnection GetPlayerConnection(int player)
