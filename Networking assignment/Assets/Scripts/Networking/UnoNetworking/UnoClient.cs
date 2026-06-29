@@ -14,15 +14,11 @@ public class UnoClient : MonoBehaviour
 
     CardEnumsConverter enumConverter;
 
-    //TODO: subscribe display scripts to these events
     public delegate void TopCardChangedEvent(Card card, CardColor wildCardColorChoice = CardColor.NULL);
     public event TopCardChangedEvent OnTopCardChanged;
 
     public delegate void ActivePlayerChangedEvent(int player);
     public event ActivePlayerChangedEvent OnActivePlayerChanged;
-
-    public delegate void PlayerDrawsCardsEvent(int player, int amount);
-    public event PlayerDrawsCardsEvent OnPlayerDrawsCards;
 
     public delegate void PlayerReceivesCardsEvent(List<Card> cards);
     public event PlayerReceivesCardsEvent OnPlayerReceivesCards;
@@ -202,7 +198,6 @@ public class UnoClient : MonoBehaviour
 
     public void MakeMoveRequest(Card card)
     {
-        //maybe do a preemptive test if the card is playable here already
         OSCMessageOut message = new OSCMessageOut("/MakeMove").AddInt(playerID);
         switch (card.cardType)
         {

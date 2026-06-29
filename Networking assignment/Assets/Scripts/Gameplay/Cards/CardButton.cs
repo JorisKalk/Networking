@@ -19,12 +19,6 @@ public class CardButton : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        
-    }
-
-
     public void ReceiveCard(Card newCard)
     {
         card = newCard;
@@ -58,22 +52,10 @@ public class CardButton : MonoBehaviour
     }
 
     //Button click
-    //change this to make a play request
     public void CardPlayed()
     {
         Debug.Log("Card played: " + card.ToString());
         
         controller.MakeMove(card);
-        //if (gameSystem.CheckCardPlayable(card))
-        //{
-        //    if (card.cardType != Card.CardType.WILD)
-        //    {
-        //        gameSystem.CardPlayed(card);
-        //    }
-        //    else
-        //    {
-        //        GameObject.Find("CardDisplay").GetComponent<DisplayCards>().DisplayColorChoices(card);
-        //    }
-        //}
     }
 }

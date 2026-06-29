@@ -34,16 +34,6 @@ public class DisplayCards : MonoBehaviour
 
     private List<GameObject> currentDisplayedButtons = new List<GameObject>();
 
-    void Start()
-    {
-        
-    }
-
-    void Update()
-    {
-        
-    }
-
     public void SubscribeEvents(UnoClient client)
     {
         client.OnTopCardChanged += OnTopCardUpdated;

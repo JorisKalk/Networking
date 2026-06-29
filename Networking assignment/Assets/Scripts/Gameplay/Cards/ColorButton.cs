@@ -16,11 +16,6 @@ public class ColorButton : MonoBehaviour
         controller = FindAnyObjectByType<Player>();
     }
 
-    void Update()
-    {
-        
-    }
-
     public void ReceiveColor(CardColor color)
     {
         cardColor = color;
@@ -54,9 +49,5 @@ public class ColorButton : MonoBehaviour
     public void ColorChosen()
     {
         controller.ChooseColor(cardColor);
-        //Debug.Log("Card played: " + card.ToString() + "\n" +
-        //    "Color chosen: " + cardColor.ToString());
-
-        //gameSystem.CardPlayed(card, cardColor);
     }
 }

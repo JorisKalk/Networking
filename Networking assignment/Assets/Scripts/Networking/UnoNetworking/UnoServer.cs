@@ -320,7 +320,6 @@ public class UnoServer : MonoBehaviour
         }
 
         connection.Send(message.GetBytes());
-        //should not be broadcast!
     }
 
     private void GameOverRpc(int winner)
@@ -333,7 +332,7 @@ public class UnoServer : MonoBehaviour
     {
         OSCMessageOut message = new OSCMessageOut("/PlayerInfo").AddInt(player);
         Debug.Log("sending playerID");
-        connection.Send(message.GetBytes()); // private message
+        connection.Send(message.GetBytes());
     }
     private void Broadcast(byte[] packet)
     {
@@ -348,7 +347,6 @@ public class UnoServer : MonoBehaviour
         TcpNetworkConnection connection = null;
         foreach (var playerID in playerIDs.Keys)
         {
-            //make sure that the keys and player numbers start at the same value
             if (playerIDs[playerID].Equals(player))
             {
                 connection = playerID;

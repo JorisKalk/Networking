@@ -5,7 +5,6 @@ using UnityEngine;
 /// will be client, server or both (=host).
 /// </summary>
 public class SessionManager : MonoBehaviour {
-	//MoveMaker controller;
 	Player controller;
 
 	bool IsClient = false;
@@ -32,16 +31,11 @@ public class SessionManager : MonoBehaviour {
 		}
 	}
 
-	//need to check if the various gui are connected to the right scripts so they function correctly both if it is the server or client
-
 	void StartServer() {
 		Debug.Log("Starting server: creating board");
 
 		UnoServer server = GetComponent<UnoServer>();
 		server.enabled = true;
-
-		//var boardOwner = FindFirstObjectByType<ModelOwner>();
-		//boardOwner.enabled = true;
 
 		IsServer = true;
 	}
