@@ -144,38 +144,6 @@ public class DisplayCards : MonoBehaviour
         }
     }
 
-    //public void DisplayColorChoices(Card card)
-    //{
-    //    ClearButtons();
-
-    //    for (int i = 0; i < 4; i++)
-    //    {
-    //        GameObject colorChoice = Instantiate(colorChoiceButton);
-    //        colorChoice.transform.SetParent(transform, false);
-    //        ColorButton button = colorChoice.GetComponent<ColorButton>();
-            
-    //        switch (i)
-    //        {
-    //            case 0:
-    //                button.ReceiveColor(CardColor.RED, card);
-    //                break;
-    //            case 1:
-    //                button.ReceiveColor(CardColor.GREEN, card);
-    //                break;
-    //            case 2:
-    //                button.ReceiveColor(CardColor.BLUE, card);
-    //                break;
-    //            case 3:
-    //                button.ReceiveColor(CardColor.YELLOW, card);
-    //                break;
-    //        }
-
-    //        currentDisplayedButtons.Add(colorChoice);
-
-    //        colorChoice.transform.localPosition = new Vector3(-600 + (400 * i), 0);
-    //    }
-    //}
-
     private void ClearButtons()
     {
         if (currentDisplayedButtons.Count >= 1)

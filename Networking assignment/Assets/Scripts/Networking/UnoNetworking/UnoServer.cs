@@ -20,8 +20,7 @@ public class UnoServer : MonoBehaviour
     private int playerCount = 4;
 
     private GameSystem gameSystem;
-    //change the int to playerdata instead to save the cards on the server instead
-    Dictionary<TcpNetworkConnection, int> playerIDs = new Dictionary<TcpNetworkConnection, int>();
+    Dictionary<TcpNetworkConnection, PlayerData> playerIDs = new Dictionary<TcpNetworkConnection, PlayerData>();
 
     private Card currentWildCard;
 
@@ -44,8 +43,6 @@ public class UnoServer : MonoBehaviour
         dispatcher.ShowIncomingMessages = true;
         Initialize();
     }
-
-
 
     private void Update()
     {
@@ -70,21 +67,17 @@ public class UnoServer : MonoBehaviour
     {
         if (playerIDs.Count < playerCount)
         {
-            playerIDs[newClient] = playerIDs.Count + 1;
-            Debug.Log($"Registering new player: {newClient.Remote} = player {playerIDs[newClient]}");
+            playerIDs[newClient] = new PlayerData(playerIDs.Count + 1);
+            Debug.Log($"Registering new player: {newClient.Remote} = player {playerIDs[newClient].GetPlayerID()}");
             if (playerIDs.Count == playerCount)
-            { // start game
+            {
                 gameSystem.StartSystem();
                 Debug.Log("Server: starting game");
-                foreach (var pid in playerIDs.Keys)
+                foreach(var pid in playerIDs.Keys)
                 {
-                    SendPrivateInformationCommand(playerIDs[pid], pid);
+                    SendPrivateInformationCommand(playerIDs[pid].GetPlayerID(), pid);
                     gameSystem.HandOutStartingCards(pid);
                 }
-            }
-            else
-            {
-                //spectator?
             }
         }
     }
@@ -140,13 +133,13 @@ public class UnoServer : MonoBehaviour
         gameSystem.OnTopCardChanged += TopCardChangedRpc;
         gameSystem.OnActivePlayerChanged += ActivePlayerChangedRpc;
         gameSystem.OnPlayerDrawsCards += PlayerDrawsCardsRpc;
-        gameSystem.OnPlayerReceivesCards += PlayerReceivesCardsRpc;
+        gameSystem.OnPlayerReceivesCards += PlayerReceivesCards;
         gameSystem.OnGameOver += GameOverRpc;
 
         dispatcher.AddListener("/MakeMove", MakeMoveRpc, OSCUtil.INT, OSCUtil.INT, OSCUtil.INT, OSCUtil.INT); //player cardColor cardType cardValue
         dispatcher.AddListener("/ColorChosen", ColorChosenRpc, OSCUtil.INT, OSCUtil.INT); //player cardColor
         dispatcher.AddListener("/DrawCard", DrawCardRpc, OSCUtil.INT); //player
-        dispatcher.AddListener("/WinnerFound", WinnerFoundRpc, OSCUtil.INT); //winner
+        dispatcher.AddListener("/MovedMouse", ActiveMouseMovedRpc, OSCUtil.FLOAT, OSCUtil.FLOAT); //mouseX mouseY
         //cards going to be transfered as multiple ints
     }
 
@@ -170,6 +163,8 @@ public class UnoServer : MonoBehaviour
         int cardTypeInt = message.ReadInt();
         int cardValueInt = message.ReadInt();
 
+        PlayerData tempPlayerData = GetPlayerData(player);
+
         Card card;
         CardColor cardColor = enumConverter.ConvertToCardColorEnum(cardColorInt);
 
@@ -181,7 +176,14 @@ public class UnoServer : MonoBehaviour
                 card = new NumberCard(cardColor, cardValueInt);
                 if (gameSystem.CheckCardPlayable(card))
                 {
+                    if (!CheckIfPlayerHasCard(player, card))
+                    {
+                        MoveRefused(player, "You do not have this card!");
+                        PlayerReceivesCards(tempPlayerData.heldCards, GetPlayerConnection(player));
+                        return;
+                    }
                     gameSystem.PlayColoredCard(card);
+                    RemoveCardFromPlayer(card, GetPlayerConnection(player));
                     MoveAccepted(player);
                 }
                 else
@@ -194,7 +196,14 @@ public class UnoServer : MonoBehaviour
                 card = new ActionCard(cardColor, enumConverter.ConvertToActionsEnum(cardValueInt));
                 if (gameSystem.CheckCardPlayable(card))
                 {
+                    if (!CheckIfPlayerHasCard(player, card))
+                    {
+                        MoveRefused(player, "You do not have this card!");
+                        PlayerReceivesCards(tempPlayerData.heldCards, GetPlayerConnection(player));
+                        return;
+                    }
                     gameSystem.PlayColoredCard(card);
+                    RemoveCardFromPlayer(card, GetPlayerConnection(player));
                     MoveAccepted(player);
                 }
                 else
@@ -205,6 +214,12 @@ public class UnoServer : MonoBehaviour
         }
         else
         {
+            if (!CheckIfPlayerHasCard(player, new WildCard(enumConverter.ConvertToWildActionsEnum(cardValueInt))))
+            {
+                MoveRefused(player, "You do not have this card!");
+                PlayerReceivesCards(tempPlayerData.heldCards, GetPlayerConnection(player));
+                return;
+            }
             card = new WildCard(enumConverter.ConvertToWildActionsEnum(cardValueInt));
             OSCMessageOut messageOut = new OSCMessageOut("/ChooseColor");
             GetPlayerConnection(player).Send(messageOut.GetBytes());
@@ -225,9 +240,28 @@ public class UnoServer : MonoBehaviour
         CardColor chosenColor = enumConverter.ConvertToCardColorEnum(cardColorInt);
 
         gameSystem.PlayWildCard(currentWildCard, chosenColor);
+        RemoveCardFromPlayer(currentWildCard, GetPlayerConnection(player));
         currentWildCard = null;
 
+
         MoveAccepted(player);
+    }
+
+    private void RemoveCardFromPlayer(Card card, TcpNetworkConnection connection)
+    {
+        foreach (Card playerCard in playerIDs[connection].heldCards)
+        {
+            if (playerCard.CompareCard(card))
+            {
+                playerIDs[connection].CardPlayed(playerCard);
+                PlayerCardsRefreshedRpc(playerIDs[connection], connection);
+                if (playerIDs[connection].heldCards.Count == 0)
+                {
+                    gameSystem.GameOver(playerIDs[connection].GetPlayerID());
+                }
+                return;
+            }
+        }
     }
 
     private void MoveRefused(int player, string reason = "Reason not given")
@@ -244,6 +278,20 @@ public class UnoServer : MonoBehaviour
         OSCMessageOut message = new OSCMessageOut("/MoveVerification").AddBool(true).AddString("move accepted");
         TcpNetworkConnection connection = GetPlayerConnection(player);
         connection.Send(message.GetBytes());
+    }
+
+    private bool CheckIfPlayerHasCard(int player, Card card)
+    {
+        PlayerData currentPlayerData = GetPlayerData(player);
+
+        //this should not be possible
+        if (currentPlayerData == null) return false;
+
+        foreach (Card playerCard in currentPlayerData.heldCards)
+        {
+            if (playerCard.CompareCard(card)) return true;
+        }
+        return false;
     }
 
     private void DrawCardRpc(OSCMessageIn message, IPEndPoint remote)
@@ -265,11 +313,11 @@ public class UnoServer : MonoBehaviour
         gameSystem.DrawPileCard(player);
     }
 
-    private void WinnerFoundRpc(OSCMessageIn message, IPEndPoint remote)
+    private void ActiveMouseMovedRpc(OSCMessageIn message, IPEndPoint remote)
     {
-        int winner = message.ReadInt();
-        hasWinner = true;
-        gameSystem.GameOver(winner);
+        float mouseX = message.ReadFloat();
+        float mouseY = message.ReadFloat();
+        SendNewMousePosRpc(mouseX, mouseY);
     }
 
     private void TopCardChangedRpc(Card card, CardColor wildColorChoice = CardColor.NULL)
@@ -309,16 +357,18 @@ public class UnoServer : MonoBehaviour
         gameSystem.PullNewCards(amount, GetPlayerConnection(player));
     }
 
-    //maybe call for their entire hand every time their turn starts? keeps the server authoritive on the player hands
-    //or likely will keep the players hand visible to them constantly
-    //need to figure this out how i will do the displaying and the updating of it
-    //maybe have the hands of the players saved on both the server and on the client and have the server check if the player actually has a card before playing it
-    //then also need to remember that the card needs to be removed from both sides when played
-    private void PlayerReceivesCardsRpc(int amount, List<Card> cards, TcpNetworkConnection connection)
+    private void PlayerReceivesCards(List<Card> cards, TcpNetworkConnection connection)
     {
-        OSCMessageOut message = new OSCMessageOut("/ReceiveCards").AddInt(amount);
+        playerIDs[connection].AddCardsToHand(cards);
 
-        foreach(Card card in cards)
+        PlayerCardsRefreshedRpc(playerIDs[connection], connection);
+    }
+
+    private void PlayerCardsRefreshedRpc(PlayerData data, TcpNetworkConnection connection)
+    {
+        OSCMessageOut message = new OSCMessageOut("/ReceiveCards").AddInt(data.heldCards.Count);
+
+        foreach (Card card in playerIDs[connection].heldCards)
         {
             switch (card.cardType)
             {
@@ -349,12 +399,19 @@ public class UnoServer : MonoBehaviour
         Broadcast(message.GetBytes());
     }
 
+    private void SendNewMousePosRpc(float mouseX, float mouseY)
+    {
+        OSCMessageOut message = new OSCMessageOut("/NewActiveMousePos").AddFloat(mouseX).AddFloat(mouseY);
+        Broadcast(message.GetBytes());
+    }
+
     private void SendPrivateInformationCommand(int player, TcpNetworkConnection connection)
     {
         OSCMessageOut message = new OSCMessageOut("/PlayerInfo").AddInt(player);
         Debug.Log("sending playerID");
         connection.Send(message.GetBytes());
     }
+
     private void Broadcast(byte[] packet)
     {
         foreach (var conn in connections)
@@ -365,7 +422,11 @@ public class UnoServer : MonoBehaviour
 
     public bool PlayerExists(int player)
     {
-        return playerIDs.ContainsValue(player);
+        foreach (PlayerData playerData in playerIDs.Values)
+        {
+            if (playerData.GetPlayerID() == player) return true;
+        }
+        return false;
     }
 
     private TcpNetworkConnection GetPlayerConnection(int player)
@@ -373,12 +434,26 @@ public class UnoServer : MonoBehaviour
         TcpNetworkConnection connection = null;
         foreach (var playerID in playerIDs.Keys)
         {
-            if (playerIDs[playerID].Equals(player))
+            if (playerIDs[playerID].GetPlayerID().Equals(player))
             {
                 connection = playerID;
                 break;
             }
         }
         return connection;
+    }
+
+    private PlayerData GetPlayerData(int player)
+    {
+        PlayerData tempPlayerData = null;
+        foreach (PlayerData data in playerIDs.Values)
+        {
+            if (data.GetPlayerID() == player)
+            {
+                tempPlayerData = data;
+                break;
+            }
+        }
+        return tempPlayerData;
     }
 }

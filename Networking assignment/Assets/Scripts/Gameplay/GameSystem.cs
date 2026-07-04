@@ -43,7 +43,7 @@ public class GameSystem
     public delegate void PlayerDrawsCardsEvent(int player, int amount);
     public event PlayerDrawsCardsEvent OnPlayerDrawsCards;
 
-    public delegate void PlayerReceivesCardsEvent(int amount, List<Card> cards, TcpNetworkConnection connection);
+    public delegate void PlayerReceivesCardsEvent(List<Card> cards, TcpNetworkConnection connection);
     public event PlayerReceivesCardsEvent OnPlayerReceivesCards;
 
     public delegate void GameOverEvent(int winner);
@@ -93,7 +93,7 @@ public class GameSystem
     public void PullNewCards(int amount, TcpNetworkConnection connection)
     {
         List<Card> cards = pile.GetCards(amount);
-        OnPlayerReceivesCards?.Invoke(amount, cards, connection);
+        OnPlayerReceivesCards?.Invoke(cards, connection);
     }
 
     public void GameOver(int winner)

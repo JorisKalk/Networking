@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using System;
+using UnityEngine.UI;
 
 public class UnoClient : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class UnoClient : MonoBehaviour
     OSCDispatcher dispatcher;
 
     CardEnumsConverter enumConverter;
+    CanvasScaler scaler;
 
     public delegate void TopCardChangedEvent(Card card, CardColor wildCardColorChoice = CardColor.NULL);
     public event TopCardChangedEvent OnTopCardChanged;
@@ -37,7 +39,11 @@ public class UnoClient : MonoBehaviour
     public delegate void GameOverEvent(int winner);
     public event GameOverEvent OnGameOver;
 
+    public delegate void NewMousePosReceivedEvent(float mouseX, float mouseY);
+    public event NewMousePosReceivedEvent OnNewMousePosReceived;
+
     private int playerID = 0;
+    private int activePlayer = 1;
 
     void Start()
     {
@@ -46,13 +52,12 @@ public class UnoClient : MonoBehaviour
             TcpClient client = new TcpClient();
             client.Connect(new IPEndPoint(ServerIP, 50006));
             connection = new TcpNetworkConnection(client);
-            // TODO: error handling
 
             enumConverter = new CardEnumsConverter();
+            scaler = GameObject.Find("Canvas").GetComponent<CanvasScaler>();
 
             Debug.Log("Starting client, connecting to " + ServerIP);
 
-            // Initialize the dispatcher and callbacks for incoming OSC messages:
             dispatcher = new OSCDispatcher();
             dispatcher.ShowIncomingMessages = true;
             Initialize();
@@ -95,6 +100,7 @@ public class UnoClient : MonoBehaviour
         dispatcher.AddListener("/MoveVerification", VerifyMoveRpc, OSCUtil.BOOL, OSCUtil.STRING); //isValidMove reason
         dispatcher.AddListener("/PlayerInfo", PlayerInfoRpc, OSCUtil.INT); //playerID
         dispatcher.AddListener("/GameOver", GameOverRpc, OSCUtil.INT); //winner(=player)
+        dispatcher.AddListener("/NewActiveMousePos", MouseMovedRpc, OSCUtil.FLOAT, OSCUtil.FLOAT); //mouseX mouseY
     }
 
     private void TopCardChangedRpc(OSCMessageIn message, IPEndPoint remote)
@@ -131,8 +137,8 @@ public class UnoClient : MonoBehaviour
 
     private void ActivePlayerChangedRpc(OSCMessageIn message, IPEndPoint remote)
     {
-        int player = message.ReadInt();
-        OnActivePlayerChanged?.Invoke(player);
+        activePlayer = message.ReadInt();
+        OnActivePlayerChanged?.Invoke(activePlayer);
     }
 
     private void PlayerDrawsCardsRpc(OSCMessageIn message, IPEndPoint remote)
@@ -211,6 +217,12 @@ public class UnoClient : MonoBehaviour
         OnGameOver?.Invoke(winner);
     }
 
+    public void MouseMovedRpc(OSCMessageIn message, IPEndPoint remote)
+    {
+        float newMousePosX = message.ReadFloat() * 2 - Screen.width / 2;
+        float newMousePosY = message.ReadFloat() * 2 - Screen.height / 2;
+        OnNewMousePosReceived?.Invoke(newMousePosX, newMousePosY);
+    }
 
     public void MakeMoveRequest(Card card)
     {
@@ -249,9 +261,16 @@ public class UnoClient : MonoBehaviour
         connection.Send(message.GetBytes());
     }
 
-    public void NoCardsLeft()
+    public void SendNewMousePos(float mouseX, float mouseY)
     {
-        OSCMessageOut message = new OSCMessageOut("/WinnerFound").AddInt(playerID);
+        float posMouseX = mouseX;
+        float posMouseY = mouseY;
+        OSCMessageOut message = new OSCMessageOut("/MovedMouse").AddFloat(posMouseX).AddFloat(posMouseY);
         connection.Send(message.GetBytes());
+    }
+
+    public bool IsActivePlayer()
+    {
+        return playerID == activePlayer;
     }
 }

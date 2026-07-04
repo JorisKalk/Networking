@@ -246,6 +246,8 @@ public abstract class Card
 
     public CardType cardType = new CardType();
     public CardColor color = new CardColor();
+
+    public abstract bool CompareCard(Card card);
 }
 
 [Serializable]
@@ -258,6 +260,21 @@ public class NumberCard : Card
         color = pColor;
         numberValue = pNumberValue;
         cardType = CardType.NUMBER;
+    }
+
+    public override bool CompareCard(Card card)
+    {
+        if (card.cardType == cardType)
+        {
+            NumberCard numberCard = (NumberCard)card;
+            if (numberCard.color == color)
+            {
+                if (numberCard.numberValue == numberValue) return true;
+                else return false;
+            }
+            else return false;
+        }
+        else return false;
     }
 
     public override string ToString()
@@ -278,6 +295,21 @@ public class ActionCard : Card
         cardType = CardType.ACTION;
     }
 
+    public override bool CompareCard(Card card)
+    {
+        if (card.cardType == cardType)
+        {
+            ActionCard actionCard = (ActionCard)card;
+            if (actionCard.color == color)
+            {
+                if (actionCard.action == action) return true;
+                else return false;
+            }
+            else return false;
+        }
+        else return false;
+    }
+
     public override string ToString()
     {
         return color.ToString() + "\n" + action.ToString();
@@ -294,6 +326,17 @@ public class WildCard : Card
         color = CardColor.BLACK;
         wildAction = pWildAction;
         cardType = CardType.WILD;
+    }
+
+    public override bool CompareCard(Card card)
+    {
+        if (card.cardType == cardType)
+        {
+            WildCard wildCard = (WildCard)card;
+            if (wildCard.wildAction == wildAction) return true;
+            else return false;
+        }
+        else return false;
     }
 
     public override string ToString()

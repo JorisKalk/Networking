@@ -6,7 +6,7 @@ using System;
 public class PlayerData
 {
     //change to the right value
-    public int playerID = 0;
+    private int playerID = 0;
     public List<Card> heldCards;
 
     //for testing purposes
@@ -49,6 +49,21 @@ public class PlayerData
         heldCards.Remove(card);
 
         UpdateHeldListInspector();
+    }
+
+    public void EmptyHand()
+    {
+        heldCards.Clear();
+    }
+
+    public int GetPlayerID()
+    {
+        return playerID;
+    }
+
+    public void SetPlayerID(int playerID)
+    {
+        this.playerID = playerID;
     }
 
     //for testing purposes
